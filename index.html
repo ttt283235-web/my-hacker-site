@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RAVI-ADMIN⚠️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* === THEME VARIABLES === */
+            --bg-body: #050508;
+            
+            /* === WATER BUBBLE VARIABLES === */
+            /* The shiny glass surface */
+            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+            /* The 3D Bubble Effect (Inner highlights & Outer Shadows) */
+            --glass-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.6),           /* Deep Drop Shadow */
+                inset 0 1px 1px rgba(255, 255, 255, 0.4), /* Sharp Top Highlight (Reflection) */
+                inset 0 -5px 15px rgba(0, 0, 0, 0.1);     /* Bottom Depth */
+            
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-blur: 40px;
+
+            /* Brand Colors */
+            --primary-grad: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            --primary-solid: #8b5cf6;
+            
+            /* Status Colors */
+            --active-text: #34d399;
+            --active-bg: rgba(52, 211, 153, 0.15);
+            --banned-text: #f87171;
+            --banned-bg: rgba(248, 113, 113, 0.15);
+            
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --font-ui: 'Outfit', sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-body);
+            /* Deep ambient glow background */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main); font-family: var(--font-ui);
+            margin: 0; min-height: 100vh;
+            
+            /* STRICT CENTERING */
+            display: flex; justify-content: center;
+        }
+
+        /* === BUBBLE GLASS CLASS === */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: 26px;
+            box-shadow: var(--glass-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Bubble Gloss Shine */
+        .glass::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.03), transparent);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* === MAIN LAYOUT === */
+        #app { 
+            display: none; 
+            width: 100%; 
+            max-width: 480px; /* Limits width like a mobile app */
+            padding: 20px; 
+            padding-bottom: 120px; 
+            margin: 0 auto; /* Ensures it stays center */
+        }
+
+        /* === HEADER === */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; padding-top: 20px;
+        }
+        .brand { font-size: 1.7rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .brand i { background: var(--primary-grad); -webkit-background-clip: text; color: transparent; font-size: 1.5rem; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5)); }
+
+        /* === BUTTONS === */
+        .btn {
+            border: none; outline: none; cursor: pointer; position: relative; z-index: 1;
+            font-family: var(--font-ui); font-weight: 600; font-size: 0.95rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            border-radius: 18px; padding: 14px 20px; transition: 0.2s;
+        }
+        .btn:active { transform: scale(0.96); filter: brightness(0.9); }
+
+        .btn-primary {
+            background: var(--primary-grad); color: white;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn-ghost {
+            background: rgba(255,255,255,0.05); color: var(--text-main);
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .btn-icon { width: 44px; height: 44px; padding: 0; border-radius: 16px; }
+
+        /* === INPUTS === */
+        .inp-group { margin-bottom: 18px; position: relative; z-index: 2; }
+        .inp-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block; font-weight: 500; }
+        
+        .inp {
+            width: 100%; background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            padding: 16px; border-radius: 16px; color: white;
+            font-family: var(--font-ui); font-size: 1rem; outline: none;
+            transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .inp:focus { 
+            border-color: var(--primary-solid); 
+            background: rgba(0,0,0,0.5); 
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2), inset 0 2px 5px rgba(0,0,0,0.2); 
+        }
+        .inp::placeholder { color: rgba(255,255,255,0.25); }
+
+        /* === STATS BUBBLES === */
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+        .stat-card {
+            /* Bubble Style */
+            background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px; padding: 15px 5px; text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            aspect-ratio: 1 / 1;
+            box-shadow: var(--glass-shadow);
+        }
+        .stat-num { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; line-height: 1; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .stat-lbl { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* === SEARCH & TABS === */
+        .search-box { position: relative; margin-bottom: 20px; }
+        .search-box i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+        
+        .tabs-row {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 20px; scrollbar-width: none;
+        }
+        .tab-chip {
+            padding: 10px 22px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            border-radius: 30px; font-size: 0.9rem; color: var(--text-muted); white-space: nowrap; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .tab-chip.active {
+            background: var(--primary-grad); border-color: transparent; color: white; font-weight: 600;
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); transform: translateY(-2px);
+        }
+
+        /* === KEY LIST === */
+        .key-list { display: flex; flex-direction: column; gap: 15px; }
+        .key-item {
+            padding: 20px; position: relative; transition: transform 0.2s;
+            /* Darker bubble for content */
+            background: linear-gradient(145deg, rgba(25, 25, 35, 0.7), rgba(10, 10, 15, 0.6));
+        }
+        .key-item:active { transform: scale(0.98); }
+
+        .ki-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; position: relative; z-index: 2; }
+        .ki-code { font-family: var(--font-code); font-weight: 700; font-size: 1.05rem; color: white; letter-spacing: 0.5px; }
+        .ki-nick { font-size: 0.85rem; color: var(--primary-solid); font-weight: 500; margin-bottom: 12px; display: block; }
+        
+        .ki-badge { 
+            padding: 6px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .bg-active { background: var(--active-bg); color: var(--active-text); border: 1px solid rgba(52, 211, 153, 0.2); box-shadow: 0 0 10px rgba(52, 211, 153, 0.1); }
+        .bg-banned { background: var(--banned-bg); color: var(--banned-text); border: 1px solid rgba(248, 113, 113, 0.2); box-shadow: 0 0 10px rgba(248, 113, 113, 0.1); }
+
+        .ki-meta { display: flex; gap: 15px; font-size: 0.85rem; color: var(--text-muted); align-items: center; position: relative; z-index: 2; }
+        .ki-meta i { font-size: 0.9rem; margin-right: 6px; color: var(--primary-solid); }
+
+        /* === FAB === */
+        .fab {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 65px; height: 65px; border-radius: 50%;
+            background: var(--primary-grad); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; 
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.5), inset 0 2px 5px rgba(255,255,255,0.3);
+            cursor: pointer; z-index: 100; transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .fab:hover { transform: scale(1.1) rotate(90deg); filter: brightness(1.1); }
+
+        /* === MODALS === */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 200;
+            display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; }
+        
+        .modal-card {
+            width: 90%; max-width: 420px; padding: 25px;
+            /* Glass Modal */
+            background: linear-gradient(145deg, rgba(20, 20, 25, 0.9), rgba(10, 10, 15, 0.95));
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 32px; 
+            transform: translateY(40px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .modal-overlay.active .modal-card { transform: translateY(0); }
+
+        .modal-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 25px; }
+
+        /* DATE CHIPS */
+        .chips-scroll { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .date-chip { 
+            padding: 8px 16px; background: rgba(255,255,255,0.05); border-radius: 20px; 
+            font-size: 0.8rem; color: var(--text-muted); cursor: pointer; border: 1px solid var(--glass-border); white-space: nowrap; transition:0.2s;
+        }
+        .date-chip:hover { border-color: var(--primary-solid); color: white; background: rgba(139, 92, 246, 0.15); }
+
+        /* CALENDAR */
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 15px; text-align: center; }
+        .cal-day { padding: 10px 0; border-radius: 12px; font-size: 0.9rem; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+        .cal-day:hover { background: rgba(255,255,255,0.1); color: white; }
+        .cal-day.today { color: white; background: var(--primary-solid); font-weight: 700; box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4); }
+
+        /* Server Hub */
+        #server-hub { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 300; padding: 20px; width: 100%; height: 100%; }
+        .sv-list { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin: 25px 0; width: 100%; }
+        .sv-item { 
+            padding: 16px; background: rgba(255,255,255,0.03); border-radius: 20px; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; transition: 0.2s;
+        }
+        .sv-item:hover { border-color: var(--primary-solid); background: rgba(139, 92, 246, 0.08); transform: translateY(-2px); }
+
+    </style>
+</head>
+<body>
+
+    <div id="server-hub">
+        <div class="glass" style="padding: 35px; width: 100%; max-width: 400px; display:flex; flex-direction:column; align-items:center;">
+            <div style="text-align: center;">
+                <h1 style="margin: 0; font-size: 2.2rem; background: var(--primary-grad); -webkit-background-clip: text; color: transparent;">RAVI-ADMIN</h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 5px;">Server Manager</p>
+            </div>
+
+            <div id="sv-list" class="sv-list"></div>
+            
+            <button class="btn btn-primary" style="width: 100%;" onclick="toggleAddServer(true)">
+                <i class="fas fa-plus"></i> Add Connection
+            </button>
+
+            <div id="add-sv-form" style="display: none; margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--glass-border); width:100%;">
+                <div class="inp-group">
+                    <label class="inp-label">Nickname</label>
+                    <input type="text" id="sv-nick" class="inp" placeholder="Main Server">
+                </div>
+                <div class="inp-group">
+                    <label class="inp-label">Firebase URL</label>
+                    <input type="text" id="sv-url" class="inp" placeholder="https://project.firebaseio.com">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-ghost" style="flex: 1;" onclick="toggleAddServer(false)">Cancel</button>
+                    <button class="btn btn-primary" style="flex: 1;" onclick="saveServer()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app">
+        <header>
+            <div class="brand"><i class="fas fa-cube"></i> <span>RAVI-Admin✅</span></div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-ghost btn-icon" onclick="openConfig()"><i class="fas fa-sliders-h"></i></button>
+                <button class="btn btn-ghost btn-icon" onclick="logout()" style="color: var(--banned-text); border-color: rgba(248,113,113,0.3);"><i class="fas fa-power-off"></i></button>
+            </div>
+        </header>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-num" id="s-total">0</div>
+                <div class="stat-lbl">Total Keys</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color: var(--active-text);" id="s-active">0</div>
+                <div class="stat-lbl">Active</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color: var(--banned-text);" id="s-banned">0</div>
+                <div class="stat-lbl">Banned</div>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search" class="inp" placeholder="Search keys, nickname..." style="padding-left: 45px;" oninput="render()">
+        </div>
+
+        <div class="tabs-row">
+            <div class="tab-chip active" onclick="filter('all', this)">All Keys</div>
+            <div class="tab-chip" onclick="filter('active', this)">Active</div>
+            <div class="tab-chip" onclick="filter('banned', this)">Banned</div>
+            <div class="tab-chip" onclick="filter('expired', this)">Expired</div>
+        </div>
+
+        <div id="list" class="key-list"></div>
+    </div>
+
+    <div class="fab" onclick="openKeyModal()"><i class="fas fa-plus"></i></div>
+
+    <div id="modal-config" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title"><i class="fas fa-sliders-h"></i> Global Config</div>
+
+            <div class="inp-group">
+                <label class="inp-label">Server Status</label>
+                <select id="c-status" class="inp">
+                    <option value="online">Online</option>
+                    <option value="offline">Offline</option>
+                </select>
+            </div>
+            <div class="inp-group">
+                <label class="inp-label">Maintenance Mode</label>
+                <select id="c-maint" class="inp">
+                    <option value="false">Disabled (Normal)</option>
+                    <option value="true">Enabled (Block Users)</option>
+                </select>
+            </div>
+            <div class="inp-group">
+                <label class="inp-label">VIP Message</label>
+                <textarea id="c-msg" class="inp" rows="3"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-ghost" style="flex: 1;" onclick="closeModal('modal-config')">Close</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveConfig()">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-key" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title">Add New Key</div>
+
+            <div class="inp-group">
+                <label class="inp-label">License Key</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="k-key" class="inp" placeholder="RAVI-XXXX">
+                    <button class="btn btn-ghost btn-icon" onclick="genKey()"><i class="fas fa-random"></i></button>
+                </div>
+            </div>
+
+            <div class="inp-group">
+                <label class="inp-label">Nickname (Optional)</label>
+                <input type="text" id="k-nick" class="inp" placeholder="e.g. Buyer - John">
+            </div>
+
+            <div class="inp-group">
+                <label class="inp-label">Expiry Date</label>
+                <input type="text" id="k-date" class="inp" placeholder="Tap to select date" readonly onclick="openCal()">
+                <div class="chips-scroll">
+                    <div class="date-chip" onclick="addDate(1)">1d</div>
+                    <div class="date-chip" onclick="addDate(3)">3d</div>
+                    <div class="date-chip" onclick="addDate(7)">7d</div>
+                    <div class="date-chip" onclick="addDate(30)">30d</div>
+                    <div class="date-chip" onclick="addDate(8)">8d</div>
+                    <div class="date-chip" onclick="addDate(365)">1y</div>
+                </div>
+            </div>
+
+            <div class="inp-group">
+                <label class="inp-label">Device ID</label>
+                <input type="text" id="k-dev" class="inp" placeholder="Optional (Hardware ID)">
+            </div>
+
+            <div class="inp-group">
+                <label class="inp-label">Status</label>
+                <select id="k-status" class="inp">
+                    <option value="true">Active</option>
+                    <option value="false">Banned</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-ghost" style="flex: 1;" onclick="closeModal('modal-key')">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveKey()">Save Key</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-cal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="font-weight: 700; font-size: 1.1rem;" id="cal-title">Month</div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-ghost btn-icon" style="width:36px; height:36px;" onclick="moveMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <button class="btn btn-ghost btn-icon" style="width:36px; height:36px;" onclick="moveMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div id="cal-grid" class="cal-grid"></div>
+            <button class="btn btn-ghost" style="width: 100%; margin-top: 20px;" onclick="closeModal('modal-cal')">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // STATE
+        let SERVERS = JSON.parse(localStorage.getItem('dp_servers') || '[]');
+        let URL = '';
+        let DB = { status: "online", maintenance: false, vip_message: "", database: [] };
+        let FILTER = 'all';
+        let EDIT_IDX = -1;
+        let CAL_DATE = new Date();
+
+        // INIT
+        window.onload = renderServers;
+
+        // SERVER LOGIC
+        function renderServers() {
+            const l = document.getElementById('sv-list');
+            l.innerHTML = '';
+            if(SERVERS.length === 0) l.innerHTML = '<div style="color:#666; text-align:center;">No servers saved.</div>';
+            SERVERS.forEach((s, i) => {
+                l.innerHTML += `
+                <div class="sv-item" onclick="connect(${i})">
+                    <div>
+                        <div style="font-weight:600; color:white;">${s.nick}</div>
+                        <div style="font-size:0.75rem; color:#94a3b8; font-family:'JetBrains Mono'">${s.url.substring(0,25)}...</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color:#6b7280; font-size:0.9rem;"></i>
+                </div>`;
+            });
+        }
+        function toggleAddServer(show) { document.getElementById('add-sv-form').style.display = show ? 'block' : 'none'; }
+        function saveServer() {
+            let u = document.getElementById('sv-url').value.trim();
+            const n = document.getElementById('sv-nick').value.trim();
+            if(!u || !n) return alert("All fields required");
+            if(u.endsWith('/')) u = u.slice(0,-1);
+            if(!u.startsWith('http')) u = 'https://' + u;
+            SERVERS.push({ nick: n, url: u });
+            localStorage.setItem('dp_servers', JSON.stringify(SERVERS));
+            toggleAddServer(false); renderServers();
+        }
+        async function connect(i) {
+            URL = SERVERS[i].url;
+            try {
+                const r = await fetch(URL + '/.json');
+                const d = await r.json();
+                DB = d || { status: "online", maintenance: false, vip_message: "", database: [] };
+                if(!DB.database) DB.database = [];
+                document.getElementById('server-hub').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                render();
+            } catch(e) { alert("Connection Error"); }
+        }
+        function logout() { location.reload(); }
+
+        // APP RENDER
+        function render() {
+            // Stats
+            document.getElementById('s-total').innerText = DB.database.length;
+            document.getElementById('s-active').innerText = DB.database.filter(x => x.is_active).length;
+            document.getElementById('s-banned').innerText = DB.database.filter(x => !x.is_active).length;
+
+            const list = document.getElementById('list');
+            list.innerHTML = '';
+            const q = document.getElementById('search').value.toLowerCase();
+
+            DB.database.forEach((k, i) => {
+                if(FILTER === 'active' && !k.is_active) return;
+                if(FILTER === 'banned' && k.is_active) return;
+                if(FILTER === 'expired' && !isExp(k.expiry_date)) return;
+                
+                // Search logic (includes nickname now)
+                const searchStr = (k.key + (k.device_id||"") + (k.nickname||"")).toLowerCase();
+                if(q && !searchStr.includes(q)) return;
+
+                const d = document.createElement('div');
+                d.className = 'glass key-item';
+                d.onclick = () => openKeyModal(i);
+                
+                const active = k.is_active;
+                d.innerHTML = `
+                    <div class="ki-head">
+                        <span class="ki-code">${k.key}</span>
+                        <span class="ki-badge ${active ? 'bg-active' : 'bg-banned'}">
+                            ${active ? 'ACTIVE' : 'BANNED'}
+                        </span>
+                    </div>
+                    ${k.nickname ? `<span class="ki-nick"><i class="fas fa-user-tag"></i> ${k.nickname}</span>` : ''}
+                    <div class="ki-meta">
+                        <span><i class="far fa-calendar-alt"></i> ${k.expiry_date}</span>
+                        <span><i class="fas fa-mobile-alt"></i> ${k.device_id ? k.device_id.substring(0,8)+'...' : 'Unbound'}</span>
+                    </div>
+                `;
+                list.appendChild(d);
+            });
+        }
+
+        async function sync() {
+            try { await fetch(URL + '/.json', { method: 'PUT', body: JSON.stringify(DB) }); render(); } catch(e) {}
+        }
+
+        // KEY & MODAL LOGIC
+        function openKeyModal(idx = -1) {
+            EDIT_IDX = idx;
+            if (idx > -1) {
+                const k = DB.database[idx];
+                document.getElementById('k-key').value = k.key;
+                document.getElementById('k-nick').value = k.nickname || ""; // Load nickname
+                document.getElementById('k-date').value = k.expiry_date;
+                document.getElementById('k-dev').value = k.device_id;
+                document.getElementById('k-status').value = k.is_active.toString();
+            } else {
+                genKey();
+                document.getElementById('k-nick').value = "";
+                document.getElementById('k-date').value = '';
+                document.getElementById('k-dev').value = '';
+                document.getElementById('k-status').value = 'true';
+            }
+            openModal('modal-key');
+        }
+        function saveKey() {
+            const obj = {
+                key: document.getElementById('k-key').value,
+                nickname: document.getElementById('k-nick').value, // Save nickname
+                expiry_date: document.getElementById('k-date').value,
+                device_id: document.getElementById('k-dev').value,
+                is_active: document.getElementById('k-status').value === 'true'
+            };
+            if(!obj.key || !obj.expiry_date) return alert("Key & Date Required");
+            
+            if (EDIT_IDX > -1) DB.database[EDIT_IDX] = obj;
+            else DB.database.push(obj);
+            
+            closeModal('modal-key'); sync();
+        }
+
+        // CONFIG LOGIC
+        function openConfig() {
+            document.getElementById('c-status').value = DB.status;
+            document.getElementById('c-maint').value = (DB.maintenance||false).toString();
+            document.getElementById('c-msg').value = DB.vip_message || "";
+            openModal('modal-config');
+        }
+        function saveConfig() {
+            DB.status = document.getElementById('c-status').value;
+            DB.maintenance = document.getElementById('c-maint').value === 'true';
+            DB.vip_message = document.getElementById('c-msg').value;
+            closeModal('modal-config'); sync();
+        }
+
+        // CALENDAR & UTILS
+        function openCal() { renderCal(); openModal('modal-cal'); }
+        function renderCal() {
+            const m = CAL_DATE.getMonth(), y = CAL_DATE.getFullYear();
+            const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            document.getElementById('cal-title').innerText = `${months[m]} ${y}`;
+            const grid = document.getElementById('cal-grid');
+            grid.innerHTML = '';
+            
+            const firstDay = new Date(y, m, 1).getDay();
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+            const today = new Date();
+
+            for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
+            for(let d=1; d<=daysInMonth; d++) {
+                const isToday = (d === today.getDate() && m === today.getMonth() && y === today.getFullYear());
+                grid.innerHTML += `<div class="cal-day ${isToday?'today':''}" onclick="pickDate(${d})">${d}</div>`;
+            }
+        }
+        function moveMonth(d) { CAL_DATE.setMonth(CAL_DATE.getMonth() + d); renderCal(); }
+        function pickDate(d) {
+            const m = String(CAL_DATE.getMonth()+1).padStart(2,'0');
+            const day = String(d).padStart(2,'0');
+            document.getElementById('k-date').value = `${day}/${m}/${CAL_DATE.getFullYear()}`;
+            closeModal('modal-cal');
+        }
+
+        function genKey() {
+            const c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            let s = "RAVI-";
+            for(let i=0;i<4;i++) s+=c.charAt(Math.floor(Math.random()*c.length));
+            s+="-";
+            for(let i=0;i<4;i++) s+=c.charAt(Math.floor(Math.random()*c.length));
+            document.getElementById('k-key').value = s;
+        }
+        function addDate(days) {
+            const dt = new Date(); dt.setDate(dt.getDate() + days);
+            const dd = String(dt.getDate()).padStart(2,'0');
+            const mm = String(dt.getMonth()+1).padStart(2,'0');
+            document.getElementById('k-date').value = `${dd}/${mm}/${dt.getFullYear()}`;
+        }
+        function isExp(d) {
+            if(!d) return false; const p=d.split('/');
+            return new Date(p[2],p[1]-1,p[0]) < new Date();
+        }
+        function filter(t, e) {
+            FILTER = t;
+            document.querySelectorAll('.tab-chip').forEach(x => x.classList.remove('active'));
+            e.classList.add('active'); render();
+        }
+        
+        function openModal(id) { const m = document.getElementById(id); m.style.display='flex'; setTimeout(()=>m.classList.add('active'),10); }
+        function closeModal(id) { const m = document.getElementById(id); m.classList.remove('active'); setTimeout(()=>m.style.display='none',300); }
+    </script>
+</body>
+</html>
